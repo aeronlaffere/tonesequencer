@@ -1,92 +1,100 @@
 import random
 
 def generate_sequence(length=3):
-    is_triple = True # flag for looping until a sequence with at least 2 different tones is generated
+
+    sequence = []
+
+    is_triple = True # assume that the current sequence is three of the same notes
+
     while is_triple:
+
         sequence = []
+
         sequence.append(random.choice([0,1,2]))
         sequence.append(random.choice([0,1,2]))
         sequence.append(random.choice([0,1,2]))
+
+        # if we can demonstrate that we don't have three identical notes then the loop is broken out of
         if sequence[0] != sequence[1] or sequence[1] != sequence[2]:
             is_triple = False
+
     return(sequence)
 
 def similar_contours(first_sequence, second_sequence):
+
+    similar = bool()
+
     if ((first_sequence[0] - first_sequence[1] < 0 and second_sequence[0] - second_sequence[1] < 0) or (first_sequence[0] - first_sequence[1] > 0 and second_sequence[0] - second_sequence[1] > 0) or (first_sequence[0] - first_sequence[1] == 0 and second_sequence[0] - second_sequence[1] == 0)) and ((first_sequence[1] - first_sequence[2] < 0 and second_sequence[1] - second_sequence[2] < 0) or (first_sequence[1] - first_sequence[2] > 0 and second_sequence[1] - second_sequence[2] > 0) or (first_sequence[1] - first_sequence[2] == 0 and second_sequence[1] - second_sequence[2] == 0)):
         similar = True
     else:
         similar = False 
+
     return(similar)
 
-def generate_raw_trials(n=35, n_reps=5, n_similar_contours=0):
+def repetition(first_sequence, second_sequence):
 
-    reps_counter = 0
-    reps_probability = n_reps / n
-    while reps_counter != n_reps: # generate fresh sets of trials until one has the right number of repetitions
+    repetition = bool()
+
+    if first_sequence == second_sequence:
+        repetition = True
+    else:
+        repetition = False
+
+    return(repetition)
+
+def generate_single_band(n_repetitions=5, n=35):
+
+    repetition_counter = int()
+    repetition_probability = n_repetitions / n
+
+    # repeatedly generate blocks of n trials until one has the desired number of repetitions
+    while repetition_counter != n_repetitions:
+
         random.seed()
-        reps_counter = 0
-        target_trials = []
-        targets = []
-        sequence = generate_sequence()
-        target_trials.append(sequence)
-        just_repeated = False
-        for i in range(1,n):
-            if just_repeated: # there has just been a repetition so don't roll the dice
-                sequence = generate_sequence()
-                while similar_contours(sequence, target_trials[i-1]): # keep generating new sequences until there is one which isn't a repeat of the previous trial
-                    sequence = generate_sequence()
-                just_repeated = False
-            else:
-                if random.choices([True,False], weights=[reps_probability,1-reps_probability])[0]:
-                    just_repeated = True
-                    reps_counter += 1
-                    # no need to generate a sequence here because we're carrying over the sequence from the last trial
-                    targets.append(i) # append index of target in series to list of targets
-                else:
-                    sequence = generate_sequence()
-                    while similar_contours(sequence, target_trials[i-1]):
-                        sequence = generate_sequence()
-                    just_repeated = False
-            target_trials.append(sequence)
-    # end target trials
 
-    keep_going = True
+        repetition_counter = int()
 
-    while keep_going: # generate fresh sets of trials until one has the right number of similar contours
-        random.seed()
-        contour_counter = 0
-        reps_counter = 0
-        reps_probability = 0
-        distractor_trials = []
-        distractors = []
+        trials = list()
+        repetitions = list()
 
-        sequence = generate_sequence()
-        if similar_contours(sequence, target_trials[i]):
-                contour_counter += 1
-        distractor_trials.append(sequence)
         just_repeated = False
 
+        # generate the first sequence of this block and add it to the sequence list
+        sequence = generate_sequence()
+        trials.append(sequence)
+
+        # now generate all of the subsequent sequences
         for i in range(1,n):
+
+            # if there has just been a repetition there should not be another one
             if just_repeated:
+
                 sequence = generate_sequence()
-                while similar_contours(sequence, distractor_trials[i-1]):
+
+                # keep generating sequences until there is one which is not a repetition
+                while repetition(sequence, trials[i-1]):
                     sequence = generate_sequence()
+
                 just_repeated = False
+
             else:
-                if random.choices([True,False], weights=[reps_probability,1-reps_probability])[0]:
+                if random.choices([True,False], weights=[repetition_probability, 1-repetition_probability])[0]:
+                    
+                    repetition_counter += 1
                     just_repeated = True
-                    reps_counter += 1
-                    # no need to generate a sequence here because we're carrying over the sequence from the last trial
-                    distractors.append(i) # append index of target in series to list of targets
+
+                    # add the index of this sequence to the list of repetitions
+                    repetitions.append(i)
                 else:
+
                     sequence = generate_sequence()
-                    while similar_contours(sequence, distractor_trials[i-1]):
+
+                    while repetition(sequence, trials[i-1]):
                         sequence = generate_sequence()
+                    
                     just_repeated = False
-            if similar_contours(sequence, target_trials[i]):
-                contour_counter += 1
-            distractor_trials.append(sequence)
-        
-        if contour_counter == n_similar_contours and reps_counter == 0:
-            keep_going = False
-    return(target_trials, distractor_trials, targets, distractors)
+                
+            # append the sequence to the list of trials
+            trials.append(sequence)
+    
+    return(trials, repetitions)

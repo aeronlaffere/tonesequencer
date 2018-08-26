@@ -2,22 +2,13 @@ import numpy as np
 
 def generate_tone(f=185, duration=0.125, Fs=44100, volume=1):
 
-    # print('Fs: ' + str(Fs))
-    # print('f: ' + str(f))
-    # print('duration: ' + str(duration))
-    # print('volume: ' + str(volume))
-
     waveform = np.sin(2 * np.pi * np.arange(duration * Fs) * f / Fs) * volume
 
-
-
-    # if f != 0:
-        #waveform = waveform/max(waveform)*0.5
-
     waveform = ramp(waveform)
+    
     return(waveform)
 
-def generate_tone_sequence(low_trials, high_trials, target_band, base_frequencies=[369.99, 415.30, 466.16], distractor_volume=1):
+def generate_tone_sequence(low_trials, high_trials, target_band, distractor_volume=1, base_frequencies=[369.99, 415.30, 466.16]):
     
     low_waveform = np.array([])
     high_waveform = np.array([])

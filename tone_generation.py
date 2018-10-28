@@ -15,23 +15,22 @@ def generate_tone_sequence(low_trials, high_trials, target_band, distractor_volu
 
     for sequence in low_trials:
         for tone in sequence:
-            low_waveform = np.append(low_waveform, generate_tone(f=base_frequencies[tone], duration=1/6, volume=0.2))
+            low_waveform = np.append(low_waveform, generate_tone(f=base_frequencies[tone], duration=1/6, volume=0.8))
             low_waveform = np.append(low_waveform, generate_tone(f=0, duration=1/6)) # silence
         low_waveform = np.append(low_waveform, generate_tone(f=0, duration=2/6)) # silence
     
     for sequence in high_trials:
         for tone in sequence:
             high_waveform = np.append(high_waveform, generate_tone(f=0, duration=1/6)) # silence
-            high_waveform = np.append(high_waveform, generate_tone(f=2*base_frequencies[tone]*((2**(1/12))**-1), duration=1/6, volume=0.2))
+            high_waveform = np.append(high_waveform, generate_tone(f=2*base_frequencies[tone]*((2**(1/12))**-1), duration=1/6, volume=(2/5)*0.8))
         high_waveform = np.append(high_waveform, generate_tone(f=0, duration=2*1/6)) # silence
 
     if target_band == 'low':
         waveform = low_waveform + (high_waveform * distractor_volume)
     elif target_band == 'high':
         waveform = high_waveform + (low_waveform * distractor_volume)
-    
-    # waveform = waveform/max(waveform)
-    waveform = 0.33 * waveform
+    elif target_band == 'passive':
+        waveform = high_waveform + low_waveform
 
     return(waveform)
 
